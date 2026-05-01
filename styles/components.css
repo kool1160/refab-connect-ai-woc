@@ -52,3 +52,22 @@ h1 {
   color: var(--color-muted);
   line-height: 1.55;
 }
+
+.workflow-nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+}
+
+.workflow-nav a {
+  display: block;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color, #d4d4d8);
+  text-decoration: none;
+  color: inherit;
+  font-weight: 600;
+  text-align: center;
+}
