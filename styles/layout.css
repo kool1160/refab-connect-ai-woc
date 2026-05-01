@@ -1,0 +1,8 @@
+.app-shell {
+  width: min(100% - 32px, var(--max-width));
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 48px 0;
+  display: grid;
+  align-items: center;
+}
