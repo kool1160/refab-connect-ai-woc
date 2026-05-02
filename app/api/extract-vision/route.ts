@@ -9,19 +9,21 @@ type VisionExtraction = {
   confidenceNotes: string;
 };
 
-const EMPTY_RESULT: VisionExtraction = {
-  workOrderNumber: "",
-  partNumber: "",
-  operationStep: "",
-  issueDescription: "",
-  rawText: "",
-  confidenceNotes: "",
-};
-
-function sanitizeBase64Input(value: string): string {
+function parseImageInput(value: string): { base64Image: string; mimeType: string } {
   const trimmed = value.trim();
-  const dataUrlMatch = trimmed.match(/^data:(?:image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
-  return dataUrlMatch ? dataUrlMatch[1] : trimmed;
+  const dataUrlMatch = trimmed.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/);
+
+  if (dataUrlMatch) {
+    return {
+      mimeType: dataUrlMatch[1],
+      base64Image: dataUrlMatch[2],
+    };
+  }
+
+  return {
+    mimeType: "image/jpeg",
+    base64Image: trimmed,
+  };
 }
 
 function parseJsonObject(text: string): VisionExtraction {
@@ -45,6 +47,7 @@ export async function POST(request: Request) {
   }
 
   let base64Image = "";
+  let mimeType = "image/jpeg";
 
   try {
     const contentType = request.headers.get("content-type") ?? "";
@@ -58,15 +61,20 @@ export async function POST(request: Request) {
       if (file instanceof File && file.size > 0) {
         const bytes = await file.arrayBuffer();
         base64Image = Buffer.from(bytes).toString("base64");
+        mimeType = file.type.startsWith("image/") ? file.type : "image/jpeg";
       } else if (typeof imageBase64 === "string") {
-        base64Image = sanitizeBase64Input(imageBase64);
+        const parsedImage = parseImageInput(imageBase64);
+        base64Image = parsedImage.base64Image;
+        mimeType = parsedImage.mimeType;
       }
     } else {
       const body = (await request.json()) as { imageBase64?: string; image?: string };
       const payloadImage = body.imageBase64 ?? body.image;
 
       if (typeof payloadImage === "string") {
-        base64Image = sanitizeBase64Input(payloadImage);
+        const parsedImage = parseImageInput(payloadImage);
+        base64Image = parsedImage.base64Image;
+        mimeType = parsedImage.mimeType;
       }
     }
   } catch {
@@ -110,7 +118,7 @@ export async function POST(request: Request) {
               },
               {
                 type: "input_image",
-                image_url: `data:image/jpeg;base64,${base64Image}`,
+                image_url: `data:${mimeType};base64,${base64Image}`,
               },
             ],
           },
