@@ -20,3 +20,18 @@ export const inMemoryWocState: WocState = {
     emailReadyConfirmed: false,
   },
 };
+
+export function getWocData(): WocData {
+  return inMemoryWocState.data;
+}
+
+export function setWocDataField(field: keyof WocData, value: string) {
+  inMemoryWocState.data = {
+    ...inMemoryWocState.data,
+    [field]: value,
+  };
+}
+
+export function setWocCurrentStep(step: WocWorkflowStep) {
+  inMemoryWocState.currentStep = step;
+}

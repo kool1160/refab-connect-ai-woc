@@ -1,8 +1,9 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { blankWocData } from '@/features/woc/defaults';
+import { useRouter } from 'next/navigation';
 import { getConfirmRequiredFieldErrors, hasConfirmRequiredFields } from '@/features/woc/validation';
+import { getWocData, setWocCurrentStep, setWocDataField } from '@/features/woc/state/wocState';
 import type { WocData } from '@/features/woc/types';
 
 type ConfirmFieldKey = 'workOrder' | 'partNumber' | 'problemSummary';
@@ -14,7 +15,8 @@ const labels: Record<ConfirmFieldKey, string> = {
 };
 
 export function ConfirmRequiredFieldsGate() {
-  const [data, setData] = useState<WocData>({ ...blankWocData });
+  const router = useRouter();
+  const [data, setData] = useState<WocData>(() => ({ ...getWocData() }));
   const [touched, setTouched] = useState<Record<ConfirmFieldKey, boolean>>({
     workOrder: false,
     partNumber: false,
@@ -26,10 +28,22 @@ export function ConfirmRequiredFieldsGate() {
 
   function setField(field: ConfirmFieldKey, value: string) {
     setData((current) => ({ ...current, [field]: value }));
+    setWocDataField(field, value);
+  }
+
+  function handleContinue() {
+    if (!canContinue) return;
+    setWocCurrentStep('generate');
+    router.push('/generate');
+  }
+
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    handleContinue();
   }
 
   return (
-    <form className="capture-card" onSubmit={(event) => event.preventDefault()} aria-label="Confirm required fields gate">
+    <form className="capture-card" onSubmit={handleSubmit} aria-label="Confirm required fields gate">
       <strong>Confirm Required Fields</strong>
       <p className="capture-help-text">Review and edit extracted values before continuing to Generate.</p>
 
