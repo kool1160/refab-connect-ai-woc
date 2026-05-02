@@ -29,3 +29,17 @@ export function getReadinessWarnings(data: WocData) {
 
   return warnings;
 }
+
+
+export function getConfirmRequiredFieldErrors(data: WocData) {
+  return {
+    workOrder: data.workOrder.trim() ? '' : 'Work Order Number is required.',
+    partNumber: data.partNumber.trim() ? '' : 'Part Number is required.',
+    problemSummary: data.problemSummary.trim() ? '' : 'Issue Description is required.',
+  };
+}
+
+export function hasConfirmRequiredFields(data: WocData) {
+  const errors = getConfirmRequiredFieldErrors(data);
+  return Boolean(!errors.workOrder && !errors.partNumber && !errors.problemSummary);
+}

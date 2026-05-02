@@ -132,3 +132,20 @@ h1 {
   overflow-x: auto;
   font-size: 0.85rem;
 }
+
+.confirm-input,
+.confirm-textarea {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+  background: rgba(10, 10, 10, 0.2);
+  color: inherit;
+}
+
+.confirm-inline-error {
+  margin: 0;
+  color: #fca5a5;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
