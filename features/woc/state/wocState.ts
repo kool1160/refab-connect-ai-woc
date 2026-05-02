@@ -39,6 +39,19 @@ export function setWocDataField(field: keyof WocData, value: string) {
   };
 }
 
+export function setWocDataFieldsIfPresent(fields: Partial<WocData>) {
+  const nextData = { ...inMemoryWocState.data };
+
+  for (const [field, value] of Object.entries(fields) as Array<[keyof WocData, string | undefined]>) {
+    if (typeof value !== 'string') continue;
+    if (value.trim().length === 0) continue;
+
+    nextData[field] = value;
+  }
+
+  inMemoryWocState.data = nextData;
+}
+
 export function setWocCurrentStep(step: WocWorkflowStep) {
   inMemoryWocState.currentStep = step;
 }
