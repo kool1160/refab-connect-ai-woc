@@ -28,6 +28,15 @@ function parseImageInput(value: string): { base64Image: string; mimeType: string
   };
 }
 
+function normalizeBase64(value: string): string {
+  return value.replace(/\s+/g, "").replace(/-/g, "+").replace(/_/g, "/");
+}
+
+function isValidBase64(value: string): boolean {
+  if (!value || value.length % 4 !== 0) return false;
+  return /^[A-Za-z0-9+/]+={0,2}$/.test(value);
+}
+
 function parseJsonObject(text: string): VisionExtraction {
   const parsed = JSON.parse(text) as Partial<VisionExtraction>;
 
@@ -62,11 +71,11 @@ export async function POST(request: Request) {
 
       if (file instanceof File && file.size > 0) {
         const bytes = await file.arrayBuffer();
-        base64Image = Buffer.from(bytes).toString("base64");
+        base64Image = normalizeBase64(Buffer.from(bytes).toString("base64"));
         mimeType = file.type.startsWith("image/") ? file.type : "image/jpeg";
       } else if (typeof imageBase64 === "string") {
         const parsedImage = parseImageInput(imageBase64);
-        base64Image = parsedImage.base64Image;
+        base64Image = normalizeBase64(parsedImage.base64Image);
         mimeType = parsedImage.mimeType;
       }
     } else {
@@ -75,7 +84,7 @@ export async function POST(request: Request) {
 
       if (typeof payloadImage === "string") {
         const parsedImage = parseImageInput(payloadImage);
-        base64Image = parsedImage.base64Image;
+        base64Image = normalizeBase64(parsedImage.base64Image);
         mimeType = parsedImage.mimeType;
       }
     }
@@ -85,6 +94,13 @@ export async function POST(request: Request) {
 
   if (!base64Image) {
     return NextResponse.json({ error: "Missing image payload. Provide an uploaded image or imageBase64 value." }, { status: 400 });
+  }
+
+  if (!isValidBase64(base64Image)) {
+    return NextResponse.json(
+      { error: "Invalid image data. Please capture or upload a valid image file and try again." },
+      { status: 400 },
+    );
   }
 
   const schema = {
