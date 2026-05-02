@@ -1,8 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { blankWocData } from '@/features/woc/defaults';
 import { getConfirmRequiredFieldErrors, hasConfirmRequiredFields } from '@/features/woc/validation';
+import { getWocData, setWocCurrentStep, setWocDataField } from '@/features/woc/state/wocState';
 import type { WocData } from '@/features/woc/types';
 
 type ConfirmFieldKey = 'workOrder' | 'partNumber' | 'problemSummary';
@@ -14,7 +14,7 @@ const labels: Record<ConfirmFieldKey, string> = {
 };
 
 export function ConfirmRequiredFieldsGate() {
-  const [data, setData] = useState<WocData>({ ...blankWocData });
+  const [data, setData] = useState<WocData>(() => ({ ...getWocData() }));
   const [touched, setTouched] = useState<Record<ConfirmFieldKey, boolean>>({
     workOrder: false,
     partNumber: false,
@@ -26,6 +26,12 @@ export function ConfirmRequiredFieldsGate() {
 
   function setField(field: ConfirmFieldKey, value: string) {
     setData((current) => ({ ...current, [field]: value }));
+    setWocDataField(field, value);
+  }
+
+  function handleContinue() {
+    if (!canContinue) return;
+    setWocCurrentStep('generate');
   }
 
   return (
@@ -70,7 +76,7 @@ export function ConfirmRequiredFieldsGate() {
       />
       {touched.problemSummary && errors.problemSummary ? <p className="confirm-inline-error">{errors.problemSummary}</p> : null}
 
-      <button className="capture-button" type="submit" disabled={!canContinue}>
+      <button className="capture-button" type="button" disabled={!canContinue} onClick={handleContinue}>
         Continue to Generate
       </button>
     </form>
