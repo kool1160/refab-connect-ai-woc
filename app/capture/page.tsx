@@ -27,6 +27,14 @@ export default function CapturePage() {
 
   function handleImageSelect(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0] ?? null;
+
+    if (file && !file.type.startsWith('image/')) {
+      setSelectedImage(null);
+      setErrorMessage('Invalid file type. Please upload or capture a valid image file.');
+      setExtraction(null);
+      return;
+    }
+
     setSelectedImage(file);
     setErrorMessage('');
     setExtraction(null);
@@ -69,7 +77,9 @@ export default function CapturePage() {
         confidenceNotes: data.confidenceNotes ?? '',
       });
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Unable to extract details from the image.');
+      setErrorMessage(
+        error instanceof Error ? error.message : 'Unable to extract details from the image. Please try another image.',
+      );
       setExtraction(null);
     } finally {
       setIsLoading(false);
