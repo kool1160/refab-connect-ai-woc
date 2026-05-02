@@ -1,7 +1,9 @@
 'use client';
 
 import { ChangeEvent, FormEvent, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { AppShell } from '@/components/layout/AppShell';
+import { setWocCurrentStep, setWocDataFieldsIfPresent } from '@/features/woc/state/wocState';
 
 type VisionExtraction = {
   workOrderNumber: string;
@@ -14,6 +16,7 @@ type VisionExtraction = {
 
 
 export default function CapturePage() {
+  const router = useRouter();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -68,13 +71,21 @@ export default function CapturePage() {
         throw new Error((data.error ?? 'Extraction failed.') + errorDetails);
       }
 
-      setExtraction({
+      const nextExtraction = {
         workOrderNumber: data.workOrderNumber ?? '',
         partNumber: data.partNumber ?? '',
         operationStep: data.operationStep ?? '',
         issueDescription: data.issueDescription ?? '',
         rawText: data.rawText ?? '',
         confidenceNotes: data.confidenceNotes ?? '',
+      };
+
+      setExtraction(nextExtraction);
+      setWocDataFieldsIfPresent({
+        workOrder: nextExtraction.workOrderNumber,
+        partNumber: nextExtraction.partNumber,
+        problemSummary: nextExtraction.issueDescription,
+        operation: nextExtraction.operationStep,
       });
     } catch (error) {
       setErrorMessage(
@@ -84,6 +95,11 @@ export default function CapturePage() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  function handleContinueToConfirm() {
+    setWocCurrentStep('confirm');
+    router.push('/confirm');
   }
 
   return (
@@ -115,6 +131,9 @@ export default function CapturePage() {
             <h2>Extracted Preview</h2>
             <pre>{JSON.stringify(extraction, null, 2)}</pre>
             {!hasExtractedValues ? <p className="capture-help-text">No readable fields were detected in the image.</p> : null}
+            <button className="capture-button" type="button" onClick={handleContinueToConfirm}>
+              Continue to Confirm
+            </button>
           </section>
         ) : null}
       </form>
