@@ -37,8 +37,13 @@ export function ConfirmRequiredFieldsGate() {
     router.push('/generate');
   }
 
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    handleContinue();
+  }
+
   return (
-    <form className="capture-card" onSubmit={(event) => event.preventDefault()} aria-label="Confirm required fields gate">
+    <form className="capture-card" onSubmit={handleSubmit} aria-label="Confirm required fields gate">
       <strong>Confirm Required Fields</strong>
       <p className="capture-help-text">Review and edit extracted values before continuing to Generate.</p>
 
@@ -79,7 +84,7 @@ export function ConfirmRequiredFieldsGate() {
       />
       {touched.problemSummary && errors.problemSummary ? <p className="confirm-inline-error">{errors.problemSummary}</p> : null}
 
-      <button className="capture-button" type="button" disabled={!canContinue} onClick={handleContinue}>
+      <button className="capture-button" type="submit" disabled={!canContinue}>
         Continue to Generate
       </button>
     </form>
