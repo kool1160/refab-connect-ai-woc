@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { getConfirmRequiredFieldErrors, hasConfirmRequiredFields } from '@/features/woc/validation';
 import { getWocData, setWocCurrentStep, setWocDataField } from '@/features/woc/state/wocState';
 import type { WocData } from '@/features/woc/types';
@@ -14,6 +15,7 @@ const labels: Record<ConfirmFieldKey, string> = {
 };
 
 export function ConfirmRequiredFieldsGate() {
+  const router = useRouter();
   const [data, setData] = useState<WocData>(() => ({ ...getWocData() }));
   const [touched, setTouched] = useState<Record<ConfirmFieldKey, boolean>>({
     workOrder: false,
@@ -32,6 +34,7 @@ export function ConfirmRequiredFieldsGate() {
   function handleContinue() {
     if (!canContinue) return;
     setWocCurrentStep('generate');
+    router.push('/generate');
   }
 
   return (
