@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "lint": "next lint"
+    "lint": "next lint",
+    "test:parser": "node --test app/api/extract-vision/parser.test.mjs"
   },
   "dependencies": {
     "next": "15.3.8",

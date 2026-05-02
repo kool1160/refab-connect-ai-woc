@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { extractResponsesOutputText, summarizeResponsesOutput } from "./parser";
+
 type VisionExtraction = {
   workOrderNumber: string;
   partNumber: string;
@@ -145,37 +147,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const data = (await openAIResponse.json()) as {
-      output_text?: string;
-      output?: Array<{
-        content?: Array<{
-          type?: string;
-          text?: string;
-        }>;
-      }>;
-    };
+    const data = await openAIResponse.json();
 
-    const outputText = typeof data.output_text === "string" && data.output_text.trim().length > 0
-      ? data.output_text
-      : data.output
-          ?.flatMap((outputItem) => outputItem.content ?? [])
-          .find((contentItem) => typeof contentItem.text === "string" && contentItem.text.trim().length > 0)
-          ?.text;
+    const outputText = extractResponsesOutputText(data);
 
     if (!outputText) {
-      const outputItemCount = Array.isArray(data.output) ? data.output.length : 0;
-      const contentItemCount = Array.isArray(data.output)
-        ? data.output.reduce((total, outputItem) => total + (Array.isArray(outputItem.content) ? outputItem.content.length : 0), 0)
-        : 0;
-
       return NextResponse.json(
         {
           error: "OpenAI response did not include structured output.",
-          details: {
-            hasOutputText: typeof data.output_text === "string" && data.output_text.length > 0,
-            outputItemCount,
-            contentItemCount,
-          },
+          details: summarizeResponsesOutput(data),
         },
         { status: 502 },
       );
